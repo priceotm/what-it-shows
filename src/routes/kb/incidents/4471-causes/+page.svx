@@ -2,66 +2,65 @@
 layout: runbook
 title: '#4471 · three problems, not one'
 owner: support desk
-status: draft
+status: open
 reviewed: 2026-11-22
 signature: lane 07 · priceotm
 ---
 
 <script>
-  import CauseTickets from '#lib/kb/CauseTickets.svelte';
+  import CauseTable from '#lib/kb/CauseTable.svelte';
   import Callout from '#lib/kb/Callout.svelte';
   import RenderStamp from '#lib/kb/RenderStamp.svelte';
-
-  const tickets = {
-    parser: { href: 'https://github.com/priceotm/what-it-shows/issues/1', label: 'what-it-shows#1' },
-    hint: { href: 'https://github.com/priceotm/what-it-shows/issues/2', label: 'what-it-shows#2' },
-    'one-day': { href: 'https://github.com/priceotm/what-it-shows/issues/3', label: 'what-it-shows#3' },
-  };
 </script>
 
 [#4471](/kb/incidents/4471) is marked *known: one issue, one fix queued*. The reports merged into it
-say otherwise. Read by what each report describes instead of by subject, they are three problems with
-three different fixes. The queued parser fix closes only the first one.
+describe three problems with three different fixes. The queued parser fix closes only the first one.
 
-<CauseTickets ticket={4471} {tickets} />
+## What was merged, by cause
+
+The desk's own count, from the export:
+
+<CauseTable ticket={4471} />
 
 ## The three problems
 
-**`parser`: the shared parser reads dates month first.** Every tenant in the directory writes the
-day first. A date like 7/4 comes out as 4 July instead of 7 April. This hits the app, email and the
-`booking-v2` form. It is what #4471 says, and the queued fix is for this.
+**1 · `parser`: the shared parser reads dates month first** →
+[what-it-shows#1](https://github.com/priceotm/what-it-shows/issues/1).
+Every tenant in the directory writes the day first, so a date like 7/4 comes out as 4 July instead of
+7 April. It hits the app, email and the `booking-v2` form. This is what #4471 says, and the queued fix is for it.
 
-**`hint`: the `booking-v3` form tells people to type month first.** Its date field shows
-`MM/DD/YYYY`, while the form reads the date the tenant's way, day first. So people do what the hint
-says, and the booking lands a month off. Only tenants on `booking-v3` get this, and only through the
-form. The parser fix does not touch it. The fix is the hint text, or the form reading what its hint asks for.
+**2 · `hint`: the `booking-v3` form tells people to type month first** →
+[what-it-shows#2](https://github.com/priceotm/what-it-shows/issues/2).
+Its date field shows `MM/DD/YYYY`, but the form reads the date the tenant's way, day first. People type
+what the hint says, and the booking lands a month off. Only tenants on `booking-v3` get it, and only
+through the form. The table above already marks it: *not this ticket, no ticket of its own*. Now it has one.
 
-**`one-day`: bookings move by one day, not by a month.** These reports do not describe a day and
-month swapped: "Tuesday 6 October showed as Monday", "Client in Lisbon got Tuesday. Client in Toronto
-got Monday. Same meeting." The desk already read them this way (`desk-notes.json`), but `causes.ts`
-files every report by its tenant, so they were counted under `parser`. A one-day shift between places
-points at time zones (the invite's time converted in the wrong zone), not at the parser. The parser fix will not close it.
+**3 · one-day move: bookings shift by one day, not by a month** →
+[what-it-shows#3](https://github.com/priceotm/what-it-shows/issues/3).
+These are the reports the desk read as a one-day move (`desk-notes.json`, the note under the table).
+They stay counted under `parser`, by tenant, but they describe a different bug: "Client in Lisbon got
+Tuesday. Client in Toronto got Monday. Same meeting." A shift of one day between places points at time
+zones, not at the parser. The parser fix will not close it.
 
 <Callout kind="warn">
 Do not close #4471 when the parser fix ships. The <code>hint</code> reports stay open until the
-<code>booking-v3</code> hint and the form agree, and the <code>one-day</code> reports until invites keep their day across time zones.
+<code>booking-v3</code> hint and the form agree, and the one-day reports until invites keep their day across time zones.
 </Callout>
 
-## How these were counted
+## How this was read
 
-- **By id, once.** The ticket export pages overlap, so some reports appear twice. Each report counts once (`uniqueById`).
-- **By tenant, not by intake tag.** Intake tags a report from the reporter's browser at the moment it
-  comes in, and that is a guess. The cause comes from the tenant's locale and booking form (`causes.ts`, `locales.ts`).
-  The tags and the causes disagree in both groups. The [#4471 page](/kb/incidents/4471) shows the tag counts.
-- **The desk's way, as exported.** Every report counts under its tenant's cause. The 5 reports in `desk-notes.json` describe a one-day move, so they also have the `one-day` ticket, and they stay counted under `parser` too.
-- **Not by subject.** [Decision 0001](/kb/decisions/0001-dedupe-by-subject) merges on subject alone,
-  and the problems share subjects ("Booking on the wrong date", "Date is wrong"). That is how they ended up in one ticket.
-  It saw this coming: "engineering merges them later". This page is that split.
+- **The desk's view, as exported.** The counts come from `CauseTable` over the exported reports: one id
+  is one report, and the cause comes from the tenant's locale and form, not from the intake tag.
+- **Not by subject.** [Decision 0001](/kb/decisions/0001-dedupe-by-subject) merges on subject alone, and
+  the three problems share subjects ("Booking on the wrong date", "Date is wrong"). That is how they
+  ended up in one ticket. It said so itself: "engineering merges them later". This page is that split.
 
 ## What the desk can do next
 
-- Triage new date reports from `booking-v3` form users to the `hint` ticket, and reports of a one-day move to the `one-day` ticket, not #4471.
-- Consider a decision record that replaces 0001 for incidents: merge on cause (tenant, channel, form), not on subject. The
-  [triage explorer](/kb/triage/dedupe) already shows pairs with the same subject and different causes.
+- Send new date reports from `booking-v3` form users to the `hint` ticket, and one-day moves to the
+  time-zone ticket, not to #4471.
+- Consider a decision record that replaces 0001 for incidents: merge on cause (tenant, channel, form),
+  not on subject. The [triage explorer](/kb/triage/dedupe) already shows pairs with the same subject and
+  different causes.
 
 <RenderStamp {signature} />
