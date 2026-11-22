@@ -53,7 +53,7 @@ Do not close #4471 when the parser fix ships. The <code>hint</code> reports stay
 - **By tenant, not by intake tag.** Intake tags a report from the reporter's browser at the moment it
   comes in, and that is a guess. The cause comes from the tenant's locale and booking form (`causes.ts`, `locales.ts`).
   The tags and the causes disagree in both groups. The [#4471 page](/kb/incidents/4471) shows the tag counts.
-- **By what the report describes, where the desk read it.** The 5 reports in `desk-notes.json` describe a one-day move, so they count under `one-day`, not under their tenant's cause.
+- **The desk's way, as exported.** Every report counts under its tenant's cause. The 5 reports in `desk-notes.json` describe a one-day move, so they also have the `one-day` ticket, and they stay counted under `parser` too.
 - **Not by subject.** [Decision 0001](/kb/decisions/0001-dedupe-by-subject) merges on subject alone,
   and the problems share subjects ("Booking on the wrong date", "Date is wrong"). That is how they ended up in one ticket.
   It saw this coming: "engineering merges them later". This page is that split.

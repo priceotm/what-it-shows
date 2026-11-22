@@ -5,8 +5,9 @@
   import { tenantOf } from '#lib/kb/locales';
 
   // One row per problem found in a merged ticket, each with the ticket that now owns it.
-  // causes.ts sorts reports by tenant. Reports the desk read as a one-day move (desk-notes.json)
-  // describe a different bug from their tenant's cause, so they get a row of their own here.
+  // Counted the desk's way: causes.ts files every report by its tenant. Reports the desk read as a
+  // one-day move (desk-notes.json) describe a different bug, so they also get a row of their own,
+  // while they stay counted where they are filed.
   type Link = { href: string; label: string };
   let { ticket, tickets }: { ticket: number; tickets: Record<string, Link> } = $props();
 
@@ -14,7 +15,7 @@
   const moved = new Set(notes.oneDayMove);
   const merged = $derived(uniqueById(reports as Report[]).filter((r) => r.mergedInto === ticket));
   const rows = $derived.by(() => {
-    const byCause = groupByCause(merged.filter((r) => !moved.has(r.id)), tenantOf).map((g) => ({
+    const byCause = groupByCause(merged, tenantOf).map((g) => ({
       problem: String(g.cause),
       reports: g.reports,
     }));
@@ -37,8 +38,8 @@
   <tbody>
     {#each rows as g (g.problem)}
       {@const t = tickets[g.problem]}
-      <tr>
-        <td><code>{g.problem}</code></td>
+      <tr class:also={g.problem === ONE_DAY}>
+        <td><code>{g.problem}</code>{#if g.problem === ONE_DAY}<sup>*</sup>{/if}</td>
         <td>{g.reports.length}</td>
         <td>{g.tenants}</td>
         <td>{g.first} → {g.last}</td>
@@ -48,6 +49,12 @@
   </tbody>
 </table>
 
+{#if rows.some((g) => g.problem === ONE_DAY)}
+  <p class="note">* Also counted under the cause they are filed under, by tenant (<code>causes.ts</code>, <code>readAs</code>), so the rows add up to more than {merged.length}.</p>
+{/if}
+
 <style>
   .sum { font-size: 1.05rem; }
+  .note { color: var(--muted); font-size: 0.85em; }
+  .also td { color: var(--muted); }
 </style>
