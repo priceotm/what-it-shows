@@ -1,6 +1,6 @@
 ---
 layout: runbook
-title: '#4471 · three problems, not one'
+title: '#4471 · two problems, not one'
 owner: support desk
 status: open
 reviewed: 2026-11-22
@@ -14,7 +14,7 @@ signature: lane 07 · priceotm
 </script>
 
 [#4471](/kb/incidents/4471) is marked *known: one issue, one fix queued*. The reports merged into it
-describe three problems with three different fixes. The queued parser fix closes only the first one.
+describe two problems with two different fixes. The queued parser fix closes only the first one.
 
 ## What was merged, by cause
 
@@ -22,7 +22,7 @@ The desk's own count, from the export:
 
 <CauseTable ticket={4471} />
 
-## The three problems
+## The two problems
 
 **1 · `parser`: the shared parser reads dates month first** →
 [what-it-shows#1](https://github.com/priceotm/what-it-shows/issues/1).
@@ -35,16 +35,12 @@ Its date field shows `MM/DD/YYYY`, but the form reads the date the tenant's way,
 what the hint says, and the booking lands a month off. Only tenants on `booking-v3` get it, and only
 through the form. The table above already marks it: *not this ticket, no ticket of its own*. Now it has one.
 
-**3 · one-day move: bookings shift by one day, not by a month** →
-[what-it-shows#3](https://github.com/priceotm/what-it-shows/issues/3).
-These are the reports the desk read as a one-day move (`desk-notes.json`, the note under the table).
-They stay counted under `parser`, by tenant, but they describe a different bug: "Client in Lisbon got
-Tuesday. Client in Toronto got Monday. Same meeting." A shift of one day between places points at time
-zones, not at the parser. The parser fix will not close it.
+The note under the table counts reports the desk read as a one-day move (`desk-notes.json`). They are
+filed under `parser` by tenant and belong to what-it-shows#1; if the parser fix does not stop them, they need a closer look.
 
 <Callout kind="warn">
 Do not close #4471 when the parser fix ships. The <code>hint</code> reports stay open until the
-<code>booking-v3</code> hint and the form agree, and the one-day reports until invites keep their day across time zones.
+<code>booking-v3</code> hint and the form agree.
 </Callout>
 
 ## How this was read
@@ -52,13 +48,12 @@ Do not close #4471 when the parser fix ships. The <code>hint</code> reports stay
 - **The desk's view, as exported.** The counts come from `CauseTable` over the exported reports: one id
   is one report, and the cause comes from the tenant's locale and form, not from the intake tag.
 - **Not by subject.** [Decision 0001](/kb/decisions/0001-dedupe-by-subject) merges on subject alone, and
-  the three problems share subjects ("Booking on the wrong date", "Date is wrong"). That is how they
+  the two problems share subjects ("Booking on the wrong date", "Date is wrong"). That is how they
   ended up in one ticket. It said so itself: "engineering merges them later". This page is that split.
 
 ## What the desk can do next
 
-- Send new date reports from `booking-v3` form users to the `hint` ticket, and one-day moves to the
-  time-zone ticket, not to #4471.
+- Send new date reports from `booking-v3` form users to the `hint` ticket, not to #4471.
 - Consider a decision record that replaces 0001 for incidents: merge on cause (tenant, channel, form),
   not on subject. The [triage explorer](/kb/triage/dedupe) already shows pairs with the same subject and
   different causes.
